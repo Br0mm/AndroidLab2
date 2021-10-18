@@ -1,22 +1,22 @@
 package com.example.androidlab2
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
     var secondsElapsed: Int = 0
     lateinit var textSecondsElapsed: TextView
-    var threadStopped = false
+    lateinit var sharedPref: SharedPreferences
 
     companion object {
         val SECONDS = "seconds"
-        val STOP = "stop"
     }
 
     var backgroundThread = Thread {
-        while (!threadStopped) {
+        while (true) {
             try {
                 Thread.sleep(1000)
                 textSecondsElapsed.post {
@@ -28,28 +28,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.run {
-            putInt(SECONDS, secondsElapsed)
-            putBoolean(STOP, false)
-        }
-        super.onSaveInstanceState(outState)
-        threadStopped = true
-        //backgroundThread.interrupt()
-        Log.i("Save", "State saved")
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         textSecondsElapsed = findViewById(R.id.textSecondsElapsed)
-        if (savedInstanceState != null) {
-            with(savedInstanceState) {
-                secondsElapsed = getInt(SECONDS)
-                threadStopped = getBoolean(STOP)
-                backgroundThread.start()
-            }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE) ?: return
+        secondsElapsed = sharedPref.getInt(SECONDS, 0)
+        backgroundThread.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE) ?: return
+        with (sharedPref.edit()) {
+            putInt(SECONDS, secondsElapsed)
+            apply()
         }
+        backgroundThread.interrupt()
     }
 
 }
