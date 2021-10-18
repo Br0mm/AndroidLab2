@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AndroidLab2</string>
+    <string name="seconds_elapsed">Seconds elapsed: %d</string>
+</resources>
