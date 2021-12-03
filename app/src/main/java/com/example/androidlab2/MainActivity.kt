@@ -15,18 +15,7 @@ class MainActivity : AppCompatActivity() {
         val SECONDS = "seconds"
     }
 
-    var backgroundThread = Thread {
-        while (true) {
-            try {
-                Thread.sleep(1000)
-                textSecondsElapsed.post {
-                    textSecondsElapsed.text = getString(R.string.seconds_elapsed, secondsElapsed++)
-                }
-            } catch (e: InterruptedException) {
-                return@Thread
-            }
-        }
-    }
+    private lateinit var backgroundThread : Thread
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +27,18 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         sharedPref = this.getPreferences(Context.MODE_PRIVATE) ?: return
         secondsElapsed = sharedPref.getInt(SECONDS, 0)
+        backgroundThread = Thread {
+            while (true) {
+                try {
+                    Thread.sleep(1000)
+                    textSecondsElapsed.post {
+                        textSecondsElapsed.text = getString(R.string.seconds_elapsed, secondsElapsed++)
+                    }
+                } catch (e: InterruptedException) {
+                    return@Thread
+                }
+            }
+        }
         backgroundThread.start()
     }
 
